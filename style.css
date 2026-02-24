@@ -1,0 +1,634 @@
+:root {
+    --primary-color: #FF007F;
+    /* Bright Rose */
+    --primary-dark: #C40062;
+    --secondary-color: #FFD700;
+    /* Gold */
+    --accent-color: #00E5FF;
+    /* Cyan */
+    --bg-gradient: linear-gradient(135deg, #FF69B4, #8A2BE2);
+    /* Vibrant Pink to Purple */
+    --envelope-color: #FF1493;
+    /* Deep Pink */
+    --envelope-flap: #FF69B4;
+    /* Hot Pink */
+    --envelope-shadow: rgba(0, 0, 0, 0.3);
+    --letter-bg: #FFFDF0;
+    /* Creamy Paper */
+    --text-color: #4A4A4A;
+    --font-heading: 'Dancing Script', cursive;
+    --font-body: 'Playfair Display', serif;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    background: var(--bg-gradient);
+    /* Add pattern overlay */
+    background-image:
+        linear-gradient(135deg, #FF69B4, #8A2BE2),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    background-size: 100% 100%, 100% 100%;
+    height: 100%;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-body);
+    /* overflow: hidden;  <-- Temporarily disabling to debug clipping */
+    position: relative;
+    /* Context for absolute positioning */
+}
+
+/* Background floating shapes */
+body::before,
+body::after {
+    content: '❤';
+    position: absolute;
+    font-size: 10rem;
+    color: rgba(255, 255, 255, 0.1);
+    /* Increased visibility */
+    z-index: 0;
+    pointer-events: none;
+    animation: drift 20s infinite linear;
+}
+
+body::before {
+    top: 10%;
+    left: 10%;
+    animation-delay: -5s;
+}
+
+body::after {
+    bottom: 10%;
+    right: 10%;
+    animation-delay: -10s;
+    font-size: 15rem;
+}
+
+@keyframes drift {
+    0% {
+        transform: rotate(0deg) translate(0, 0);
+    }
+
+    50% {
+        transform: rotate(10deg) translate(20px, 20px);
+    }
+
+    100% {
+        transform: rotate(0deg) translate(0, 0);
+    }
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    perspective: 1500px;
+    z-index: 10;
+}
+
+/* Audio Control */
+.audio-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#mute-btn {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    border: 2px solid white;
+    border-radius: 50%;
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    color: white;
+}
+
+#mute-btn:hover {
+    transform: scale(1.1) rotate(10deg);
+    background: white;
+    color: var(--primary-color);
+}
+
+/* Envelope 3D Wrapper */
+/* Envelope 3D Wrapper - Forced Centering */
+.envelope-wrapper {
+    position: absolute;
+    /* Absolute positioning to force center */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Center perfectly */
+    cursor: pointer;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 50;
+    /* Ensure it's above background */
+}
+
+.envelope-wrapper:not(.open):hover {
+    transform: translate(-50%, -50%) scale(1.1) rotate(2deg);
+    /* Maintain center on hover */
+}
+
+.envelope {
+    position: relative;
+    width: 320px;
+    height: 220px;
+    background: var(--envelope-color);
+    box-shadow: 0 20px 45px var(--envelope-shadow);
+    transform-style: preserve-3d;
+    border-radius: 5px;
+}
+
+/* Envelope Parts */
+.front,
+.back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.back {
+    background: var(--envelope-color);
+    z-index: 1;
+    border-radius: 5px;
+}
+
+/* The Pocket (Triangles) */
+.pocket {
+    width: 320px;
+    height: 220px;
+    border-style: solid;
+    border-width: 0 0 110px 160px;
+    /* Bottom Right */
+    border-color: transparent transparent #C40062 transparent;
+    /* Shading */
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 3;
+}
+
+/* We need another triangle for the left side to make a proper envelope shape */
+.pocket::before {
+    content: '';
+    position: absolute;
+    bottom: -110px;
+    /* Offset because it's a pseudo of .pocket */
+    left: -160px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 110px 160px 0 0;
+    /* Bottom Left */
+    border-color: #D6006B transparent transparent transparent;
+    /* Left side color */
+    transform: rotate(180deg);
+}
+
+/* Let's simplify the pocket structure for cleaner CSS triangles */
+.pocket-real {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 110px 160px 0 160px;
+    /* height | right | bottom | left */
+    border-color: transparent var(--envelope-color) var(--envelope-flap) var(--envelope-color);
+    border-bottom-color: #E60073;
+    /* Bottom triangle color */
+    border-left-color: #FF1493;
+    border-right-color: #FF1493;
+    z-index: 3;
+    border-top: 0;
+}
+
+/* Flap */
+.flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 110px 160px 0 160px;
+    border-color: var(--envelope-flap) transparent transparent transparent;
+    transform-origin: top;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 4;
+    border-radius: 5px 5px 0 0;
+}
+
+.envelope.open .flap {
+    transform: rotateX(180deg);
+    z-index: 1;
+    transition-delay: 0s;
+}
+
+/* The Letter (Initial State tied to Envelope) */
+.letter-proxy {
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    width: 300px;
+    height: 180px;
+    background: var(--letter-bg);
+    z-index: 2;
+    transition: transform 0.6s ease;
+    border-radius: 5px 5px 0 0;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.envelope.open .letter-proxy {
+    transform: translateY(-50px);
+    z-index: 1;
+    /* Stays inside */
+}
+
+/* The Real Reading View (Overlay) */
+.reading-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.reading-view.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Heart Seal */
+.heart-seal {
+    position: absolute;
+    top: 50%;
+    /* Adjusted to sit on the flap tip */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: #FFD700;
+    /* Gold seal */
+    border-radius: 50%;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.heart-seal::after {
+    content: '❤';
+    color: #C40062;
+    font-size: 1.2rem;
+}
+
+.envelope.open .heart-seal {
+    transform: translate(-50%, -150%) scale(0);
+    /* Hide/Pop when opening */
+    transition-delay: 0s;
+}
+
+/* More Background Details (Sparkles) */
+.sparkle {
+    position: absolute;
+    background: white;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    animation: twinkle 2s infinite ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* Paper Decoration */
+.paper {
+    width: 90vw;
+    /* Takes up most of the viewport width */
+    max-width: 1000px;
+    /* Much wider limit */
+    height: 85vh;
+    /* Fixed tall height */
+    background: var(--letter-bg);
+    padding: 40px;
+    /* Reduced padding for more text space */
+    border-radius: 5px;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 0 20px rgba(255, 105, 180, 0.2);
+    /* Subtle paper texture */
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 100% 28px;
+    overflow-y: auto;
+    transform: translateY(50px) scale(0.9);
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    display: flex;
+    /* Flexbox for layout */
+    flex-direction: column;
+    justify-content: space-between;
+    /* Space out content and footer */
+    border: 3px double #e0c097;
+}
+
+/* Corner Flowers (Pseudo CSS) */
+.paper::after {
+    content: '🌸';
+    position: absolute;
+    bottom: 80px;
+    /* Moved up above buttons */
+    right: 20px;
+    font-size: 2rem;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.reading-view.active .paper {
+    transform: translateY(0) scale(1);
+}
+
+/* Letter Content grows to fill space but pushes buttons down */
+.letter-content {
+    flex-grow: 1;
+}
+
+/* Autumn & Lily Background Effects */
+/* Autumn & Lily Background Effects */
+.autumn-leaf,
+.lily {
+    position: absolute;
+    top: -50px;
+    pointer-events: none;
+    z-index: 100;
+    /* Ensure visibility */
+}
+
+/* Leaf Logic */
+.autumn-leaf {
+    width: auto;
+    height: auto;
+    opacity: 0.8;
+    animation: fall linear forwards, sway ease-in-out infinite alternate;
+}
+
+/* Lily Logic */
+.lily {
+    width: auto;
+    height: auto;
+    opacity: 0.9;
+    animation: floatUp linear forwards, rotate ease-in-out infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}
+
+@keyframes sway {
+    from {
+        transform: translateX(-20px);
+    }
+
+    to {
+        transform: translateX(20px);
+    }
+}
+
+@keyframes floatUp {
+    from {
+        top: 110%;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    to {
+        top: -10%;
+        opacity: 0;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(45deg);
+    }
+}
+
+/* Adjust z-indexes to ensure background stays in background */
+.container {
+    z-index: 10;
+}
+
+body::before,
+body::after {
+    z-index: 0;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    /* Wider gap for easier clicking */
+    margin-top: auto;
+    /* Push to bottom */
+    padding-top: 20px;
+    border-top: 2px solid rgba(0, 0, 0, 0.05);
+    /* Separator line */
+    width: 100%;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    /* Text only or simple icons like Minecraft */
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 2rem;
+    /* Big arrows */
+    cursor: pointer;
+    transition: transform 0.2s;
+    padding: 0 20px;
+}
+
+.nav-btn:hover:not(:disabled) {
+    transform: scale(1.2);
+    /* No background change, just scale */
+}
+
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: #ccc;
+    color: #ccc;
+}
+
+#page-num {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+/* Close Button */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    z-index: 20;
+}
+
+.close-btn:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+/* Decorations on Paper */
+.paper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 40px;
+    width: 2px;
+    height: 100%;
+    background: rgba(255, 0, 0, 0.1);
+    /* Margin line */
+}
+
+.letter-content h1 {
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.letter-content p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.signature {
+    text-align: right;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    margin-top: 40px;
+    color: var(--primary-color);
+}
+
+.instruction {
+    position: absolute;
+    bottom: -60px;
+    color: white;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: floating 2s ease-in-out infinite;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.5s;
+}
+
+.envelope-wrapper.open .instruction {
+    opacity: 0;
+}
+
+@keyframes floating {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .envelope {
+        width: 280px;
+        height: 180px;
+    }
+
+    .flap {
+        border-width: 90px 140px 0 140px;
+    }
+
+    .pocket-real {
+        border-width: 90px 140px 0 140px;
+    }
+
+    .letter-proxy {
+        width: 260px;
+        height: 160px;
+    }
+
+    .paper {
+        padding: 40px 20px;
+        width: 90%;
+    }
+
+    .letter-content h1 {
+        font-size: 2.2rem;
+    }
+
+    .letter-content p {
+        font-size: 1rem;
+    }
+}
