@@ -41,24 +41,23 @@ document.addEventListener('DOMContentLoaded', () => {
             envelope.classList.add('open');
             envelopeWrapper.classList.add('open');
 
-            // Start music after a short delay to match the letter reveal
-            setTimeout(() => {
-                playAudio();
+            // Play audio IMMEDIATELY on click (must be within user gesture context for HTTPS)
+            playAudio();
 
-                // Show content fade in
+            // Show content fade in after short delay to match animation
+            setTimeout(() => {
                 const letterContent = document.querySelector('.letter-content');
                 if (letterContent) letterContent.style.opacity = '1';
 
                 // Trigger Confetti
                 startConfetti();
 
-                // Expand to full view after animation completes
+                // Show Reading View
                 setTimeout(() => {
-                    // Show Reading View
                     readingView.classList.add('active');
                 }, 800);
 
-            }, 800);
+            }, 200);
         }
     });
 
