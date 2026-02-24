@@ -9,9 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Audio Playback Function
     const playAudio = () => {
-        if (bgm.paused) {
-            bgm.volume = 0.5; // Moderate volume
-            bgm.play().catch(e => console.log("Autoplay prevented:", e));
+        // Play BGM
+        if (bgm && bgm.paused) {
+            bgm.volume = 0.5;
+            bgm.play().catch(e => console.log('BGM autoplay prevented:', e));
+        }
+        // Play SFX (optional — won't break if file missing)
+        if (sfxOpen) {
+            sfxOpen.play().catch(() => { });
         }
     };
 
@@ -158,20 +163,7 @@ Truthfully, loving and still caring for you never felt chaotic to me. It always 
         setTimeout(() => leaf.remove(), 10000); // Cleanup
     };
 
-    const createLily = () => {
-        const lily = document.createElement('div');
-        lily.classList.add('lily');
-        lily.innerHTML = '🌸'; // Using Cherry Blossom as it looks like a floating pink flower
-        lily.style.left = Math.random() * 100 + 'vw';
-        lily.style.animationName = 'floatUp';
-        lily.style.animationDuration = Math.random() * 10 + 8 + 's';
-        lily.style.fontSize = Math.random() * 20 + 30 + 'px';
-        document.body.appendChild(lily);
-        setTimeout(() => lily.remove(), 18000);
-    };
-
-    setInterval(createAutumnLeaf, 500); // Frequent leaves
-    setInterval(createLily, 2000); // Occasional flowers
+    setInterval(createAutumnLeaf, 500); // Falling autumn leaves
 
     // Mouse Trail Effect
     let throttleTimer;
