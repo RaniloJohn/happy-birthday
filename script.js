@@ -8,35 +8,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Debug: check if audio element and source are accessible
     console.log('BGM element:', bgm);
-    console.log('BGM src:', bgm ? bgm.currentSrc || bgm.querySelector('source')?.src : 'not found');
-    if (bgm) {
-        bgm.addEventListener('error', (e) => console.error('BGM load error:', e, bgm.error));
-        bgm.addEventListener('canplay', () => console.log('BGM ready to play'));
-        bgm.load(); // Force load
-    }
+
+    let audioReady = false;
+
+    // Load audio as blob on first play to bypass hosting restrictions
+    const loadAndPlayAudio = () => {
+        if (audioReady) {
+            // Already loaded, just play
+            if (bgm.paused) {
+                bgm.volume = 0.5;
+                bgm.play()
+                    .then(() => console.log('BGM playing!'))
+                    .catch(e => console.error('BGM play failed:', e));
+            }
+            return;
+        }
+
+        console.log('Fetching audio...');
+        fetch('assets/audio/bgm.mp3')
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                bgm.src = url;
+                bgm.volume = 0.5;
+                audioReady = true;
+                bgm.play()
+                    .then(() => console.log('BGM playing via blob!'))
+                    .catch(e => console.error('Blob play failed:', e));
+            })
+            .catch(e => console.error('Fetch failed:', e));
+    };
 
     // Audio Playback Function
     const playAudio = () => {
-        console.log('playAudio called, bgm:', bgm, 'paused:', bgm?.paused, 'readyState:', bgm?.readyState);
-        // Play BGM
-        if (bgm && bgm.paused) {
-            bgm.volume = 0.5;
-            bgm.play()
-                .then(() => console.log('BGM playing!'))
-                .catch(e => console.error('BGM play failed:', e));
-        }
+        loadAndPlayAudio();
     };
 
     // Mute/Unmute Toggle
     muteBtn.addEventListener('click', () => {
         if (bgm.muted) {
             bgm.muted = false;
-            sfxOpen.muted = false;
             muteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
-            if (isOpened) playAudio(); // Resume if already open
+            if (isOpened) playAudio();
         } else {
             bgm.muted = true;
-            sfxOpen.muted = true;
             muteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-x"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
         }
     });
