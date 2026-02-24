@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         console.log('Fetching audio...');
-        fetch('assets/audio/bgm.mp3')
+        fetch('https://cdn.jsdelivr.net/gh/RaniloJohn/happy-birthday@main/assets/audio/bgm.mp3')
             .then(r => {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 return r.blob();
