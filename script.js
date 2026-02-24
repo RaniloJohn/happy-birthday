@@ -3,20 +3,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const envelopeWrapper = document.getElementById('envelope-wrapper');
     const readingView = document.getElementById('reading-view');
     const bgm = document.getElementById('bgm');
-    const sfxOpen = document.getElementById('sfx-open');
     const muteBtn = document.getElementById('mute-btn');
     let isOpened = false;
 
+    // Debug: check if audio element and source are accessible
+    console.log('BGM element:', bgm);
+    console.log('BGM src:', bgm ? bgm.currentSrc || bgm.querySelector('source')?.src : 'not found');
+    if (bgm) {
+        bgm.addEventListener('error', (e) => console.error('BGM load error:', e, bgm.error));
+        bgm.addEventListener('canplay', () => console.log('BGM ready to play'));
+        bgm.load(); // Force load
+    }
+
     // Audio Playback Function
     const playAudio = () => {
+        console.log('playAudio called, bgm:', bgm, 'paused:', bgm?.paused, 'readyState:', bgm?.readyState);
         // Play BGM
         if (bgm && bgm.paused) {
             bgm.volume = 0.5;
-            bgm.play().catch(e => console.log('BGM autoplay prevented:', e));
-        }
-        // Play SFX (optional — won't break if file missing)
-        if (sfxOpen) {
-            sfxOpen.play().catch(() => { });
+            bgm.play()
+                .then(() => console.log('BGM playing!'))
+                .catch(e => console.error('BGM play failed:', e));
         }
     };
 
